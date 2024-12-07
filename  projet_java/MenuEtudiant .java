@@ -147,5 +147,16 @@ public class MenuEtudiant {
         return lines;
     }
 
+
+    // Méthode pour enregistrer la correction dans un fichier
+    private void enregistrerCorrection(String filePath, List<String> correction) throws IOException {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
+            for (String line : correction) {
+                writer.write(line);
+                writer.newLine();
+            }
+        }
+    }
+
     
 }
