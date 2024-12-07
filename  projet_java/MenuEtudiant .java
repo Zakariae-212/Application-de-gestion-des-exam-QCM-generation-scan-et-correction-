@@ -258,5 +258,24 @@ public class MenuEtudiant {
     }
 
 
+    // Méthode pour enregistrer la réponse dans la base de données
+    private void enregistrerRéponse(int studentId, int examId, int questionId, int selectedOptionId) {
+        try (Connection connection = DatabaseConnection.getConnection()) {
+            String query = "INSERT INTO student_responses (student_id, exam_id, question_id, selected_option_id) VALUES (?, ?, ?, ?)";
+            try (PreparedStatement stmt = connection.prepareStatement(query)) {
+                stmt.setInt(1, studentId);
+                stmt.setInt(2, examId);
+                stmt.setInt(3, questionId);
+                stmt.setInt(4, selectedOptionId);
+                stmt.executeUpdate();
+                System.out.println("Réponse enregistrée dans la base de données.");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("Erreur lors de l'enregistrement de la réponse.");
+        }
+    }
+
+
     
 }
