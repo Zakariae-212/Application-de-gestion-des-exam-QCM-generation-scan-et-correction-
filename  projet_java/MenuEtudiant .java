@@ -216,5 +216,24 @@ public class MenuEtudiant {
         }
     }
 
+
+
+    // Méthode pour supprimer les anciennes réponses de l'étudiant pour cet examen
+    private void supprimerAnciennesRéponses(Connection connection, int userId, int examId) {
+        try {
+            String deleteQuery = "DELETE FROM student_responses WHERE student_id = ? AND exam_id = ?";
+            try (PreparedStatement deleteStmt = connection.prepareStatement(deleteQuery)) {
+                deleteStmt.setInt(1, userId);
+                deleteStmt.setInt(2, examId);
+                deleteStmt.executeUpdate();
+                System.out.println("Anciennes réponses supprimées.");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("Erreur lors de la suppression des anciennes réponses.");
+        }
+    }
+
+
     
 }
