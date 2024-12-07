@@ -26,17 +26,17 @@ public class MenuEtudiant {
             System.out.print("Choisissez une option : ");
             
             int choice = scanner.nextInt();
-            scanner.nextLine(); // Consommer la ligne restante
+            scanner.nextLine(); 
             
             switch (choice) {
                 case 1:
-                    afficherExamens(user); // Afficher les examens disponibles
+                    afficherExamens(user); 
                     break;
                 case 2:
-                    passerExamen(user); // Passer un examen
+                    passerExamen(user); 
                     break;
                 case 3:
-                    corrigerExamen(user); // Corriger un examen
+                    corrigerExamen(user); 
                     break;
                 case 4:
                     System.out.println("Au revoir !");
@@ -56,7 +56,6 @@ public class MenuEtudiant {
         System.out.println("\nExamen(s) disponible(s) :");
         
         try (Connection connection = DatabaseConnection.getConnection()) {
-            // Requête SQL pour récupérer les examens disponibles pour l'étudiant
             String query = "SELECT * FROM exams";
             try (PreparedStatement statement = connection.prepareStatement(query);
                  ResultSet rs = statement.executeQuery()) {
@@ -77,10 +76,9 @@ public class MenuEtudiant {
     private void corrigerExamen(User user) {
         System.out.print("\nEntrez l'ID de l'examen que vous souhaitez corriger : ");
         int examId = scanner.nextInt();
-        scanner.nextLine(); // Consommer la ligne restante
+        scanner.nextLine(); 
 
         try {
-            // Vérifier l'existence du fichier de réponses de l'étudiant
             String studentFilePath = "C:\\Users\\ramiz\\OneDrive\\Documents\\dossier_etudiant\\etudiant_" + user.getId() + "exams" + examId + ".txt";
             File studentFile = new File(studentFilePath);
             if (!studentFile.exists()) {
@@ -88,7 +86,6 @@ public class MenuEtudiant {
                 return;
             }
 
-            // Vérifier l'existence du fichier de l'examen (réponses du professeur)
             String examFilePath = "C:\\Users\\ramiz\\OneDrive\\Documents\\dossier_professeur\\examen_" + examId + ".txt";
             File examFile = new File(examFilePath);
             if (!examFile.exists()) {
@@ -96,14 +93,11 @@ public class MenuEtudiant {
                 return;
             }
 
-            // Lire les réponses de l'étudiant
             List<String> studentResponses = lireFichier(studentFile);
-            // Lire les bonnes réponses du professeur
             List<String> correctAnswers = lireFichier(examFile);
 
-            // Comparer les réponses de l'étudiant avec celles du professeur
             List<String> correction = new ArrayList<>();
-            int score = 0; // Initialiser le score
+            int score = 0; 
 
             for (int i = 0; i < studentResponses.size(); i++) {
                 String studentAnswer = studentResponses.get(i).trim();
@@ -112,7 +106,7 @@ public class MenuEtudiant {
 
                 if (studentAnswer.equals(correctAnswer)) {
                     result = "Vrai : La bonne réponse est " + correctAnswer;
-                    score++;  // Ajouter un point pour la bonne réponse
+                    score++;  
                 } else {
                     result = "Faux : La bonne réponse est " + correctAnswer;
                 }
@@ -120,10 +114,8 @@ public class MenuEtudiant {
                 correction.add("Question " + (i + 1) + ": " + result);
             }
 
-            // Ajouter le score final à la correction
             correction.add("\nScore final : " + score + " / " + studentResponses.size());
 
-            // Enregistrer la correction dans un fichier
             String correctionFilePath = "C:\\Users\\ramiz\\OneDrive\\Documents\\dossier_correction\\correction-" + examId + "-etudiant" + user.getId() + ".txt";
             enregistrerCorrection(correctionFilePath, correction);
 
@@ -168,17 +160,15 @@ public class MenuEtudiant {
     private void passerExamen(User user) {
         System.out.print("\nEntrez l'ID de l'examen que vous souhaitez passer : ");
         int examId = scanner.nextInt();
-        scanner.nextLine(); // Consommer la ligne restante
+        scanner.nextLine(); 
 
         try (Connection connection = DatabaseConnection.getConnection()) {
-            // Vérifier si l'examen existe
             String checkExamQuery = "SELECT * FROM exams WHERE id = ?";
             try (PreparedStatement checkStmt = connection.prepareStatement(checkExamQuery)) {
                 checkStmt.setInt(1, examId);
                 try (ResultSet rs = checkStmt.executeQuery()) {
                     if (rs.next()) {
                         System.out.println("Vous avez choisi l'examen : " + rs.getString("name"));
-                        // Passer les questions
                         passerQuestions(connection, examId, user.getId());
                     } else {
                         System.out.println("Examen introuvable.");
@@ -194,7 +184,6 @@ public class MenuEtudiant {
 
     // Méthode pour passer les questions d'un examen
     private void passerQuestions(Connection connection, int examId, int userId) throws SQLException {
-        // Supprimer les anciennes réponses de l'étudiant pour cet examen
         supprimerAnciennesRéponses(connection, userId, examId);
 
         String queryQuestions = "SELECT * FROM questions WHERE exam_id = ?";
@@ -207,9 +196,8 @@ public class MenuEtudiant {
                     String questionText = rs.getString("question_text");
                     System.out.println("\nQuestion " + questionNumber + ": " + questionText);
                     int selectedOptionId = afficherOptions(connection, questionId);
-                    enregistrerRéponse(userId, examId, questionId, selectedOptionId); // Enregistrer la réponse dans la BDD
-                    enregistrerRéponseDansFichier(userId, examId, questionId, selectedOptionId); // Enregistrer la réponse dans un fichier
-                    questionNumber++;
+                    enregistrerRéponse(userId, examId, questionId, selectedOptionId); 
+                    enregistrerRéponseDansFichier(userId, examId, questionId, selectedOptionId); 
                 }
                 System.out.println("Merci d'avoir passé l'examen !");
             }
@@ -252,7 +240,6 @@ public class MenuEtudiant {
             }
         }
 
-        // Demander à l'étudiant de choisir une option
         System.out.print("\nEntrez le numéro de l'option choisie : ");
         return scanner.nextInt();
     }
@@ -279,23 +266,19 @@ public class MenuEtudiant {
 
     // Méthode pour enregistrer la réponse dans un fichier
     private void enregistrerRéponseDansFichier(int studentId, int examId, int questionId, int selectedOptionId) {
-        // Spécifier le nom du fichier en fonction de l'ID de l'étudiant et de l'ID de l'examen
         String cheminFichier = "C:\\Users\\ramiz\\OneDrive\\Documents\\dossier_etudiant\\etudiant_" + studentId + "exams" + examId + ".txt";
         
         try {
-            // Vérifier si le répertoire existe, sinon le créer
             File dossier = new File("C:\\Users\\ramiz\\OneDrive\\Documents\\dossier_etudiant");
             if (!dossier.exists()) {
-                dossier.mkdirs(); // Crée le répertoire si nécessaire
+                dossier.mkdirs(); 
             }
 
-            // Créer le fichier s'il n'existe pas déjà
             File file = new File(cheminFichier);
             if (!file.exists()) {
-                file.createNewFile(); // Crée un nouveau fichier si nécessaire
+                file.createNewFile(); 
             }
 
-            // Lire les réponses existantes du fichier pour conserver seulement les deux dernières
             StringBuilder responses = new StringBuilder();
             try (Scanner scanner = new Scanner(file)) {
                 while (scanner.hasNextLine()) {
@@ -303,21 +286,17 @@ public class MenuEtudiant {
                 }
             }
 
-            // Ajouter la nouvelle option sélectionnée à la fin de la liste
             responses.append(selectedOptionId).append("\n");
 
-            // Garde seulement les deux dernières réponses
             String[] allResponses = responses.toString().split("\n");
             if (allResponses.length > 2) {
-                // Si plus de deux réponses, conserver uniquement les deux dernières
                 responses = new StringBuilder();
                 responses.append(allResponses[allResponses.length - 2]).append("\n")
                         .append(allResponses[allResponses.length - 1]).append("\n");
             }
 
-            // Réécrire le fichier avec seulement les deux dernières réponses
-            try (FileWriter writer = new FileWriter(file, false)) { // false pour réécrire le fichier (écraser)
-                writer.write(responses.toString()); // Écrire seulement les deux dernières réponses
+            try (FileWriter writer = new FileWriter(file, false)) { 
+                writer.write(responses.toString()); 
                 System.out.println("Réponse enregistrée dans le fichier.");
             }
 
