@@ -72,5 +72,67 @@ public class MenuEtudiant {
         }
     }
 
+
+    // Méthode pour corriger un examen
+    private void corrigerExamen(User user) {
+        System.out.print("\nEntrez l'ID de l'examen que vous souhaitez corriger : ");
+        int examId = scanner.nextInt();
+        scanner.nextLine(); // Consommer la ligne restante
+
+        try {
+            // Vérifier l'existence du fichier de réponses de l'étudiant
+            String studentFilePath = "C:\\Users\\ramiz\\OneDrive\\Documents\\dossier_etudiant\\etudiant_" + user.getId() + "exams" + examId + ".txt";
+            File studentFile = new File(studentFilePath);
+            if (!studentFile.exists()) {
+                System.out.println("Le fichier de l'examen de l'étudiant n'existe pas.");
+                return;
+            }
+
+            // Vérifier l'existence du fichier de l'examen (réponses du professeur)
+            String examFilePath = "C:\\Users\\ramiz\\OneDrive\\Documents\\dossier_professeur\\examen_" + examId + ".txt";
+            File examFile = new File(examFilePath);
+            if (!examFile.exists()) {
+                System.out.println("Le fichier de l'examen n'existe pas.");
+                return;
+            }
+
+            // Lire les réponses de l'étudiant
+            List<String> studentResponses = lireFichier(studentFile);
+            // Lire les bonnes réponses du professeur
+            List<String> correctAnswers = lireFichier(examFile);
+
+            // Comparer les réponses de l'étudiant avec celles du professeur
+            List<String> correction = new ArrayList<>();
+            int score = 0; // Initialiser le score
+
+            for (int i = 0; i < studentResponses.size(); i++) {
+                String studentAnswer = studentResponses.get(i).trim();
+                String correctAnswer = correctAnswers.get(i).trim();
+                String result;
+
+                if (studentAnswer.equals(correctAnswer)) {
+                    result = "Vrai : La bonne réponse est " + correctAnswer;
+                    score++;  // Ajouter un point pour la bonne réponse
+                } else {
+                    result = "Faux : La bonne réponse est " + correctAnswer;
+                }
+
+                correction.add("Question " + (i + 1) + ": " + result);
+            }
+
+            // Ajouter le score final à la correction
+            correction.add("\nScore final : " + score + " / " + studentResponses.size());
+
+            // Enregistrer la correction dans un fichier
+            String correctionFilePath = "C:\\Users\\ramiz\\OneDrive\\Documents\\dossier_correction\\correction-" + examId + "-etudiant" + user.getId() + ".txt";
+            enregistrerCorrection(correctionFilePath, correction);
+
+            System.out.println("La correction de votre examen a été enregistrée avec un score de " + score + ".");
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println("Erreur lors de la correction de l'examen.");
+        }
+    }
+
     
 }
