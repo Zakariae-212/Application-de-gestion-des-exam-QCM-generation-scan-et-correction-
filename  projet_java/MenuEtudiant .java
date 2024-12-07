@@ -158,5 +158,38 @@ public class MenuEtudiant {
         }
     }
 
+
+
+
+
+
+
+    // Méthode pour permettre à l'étudiant de passer un examen
+    private void passerExamen(User user) {
+        System.out.print("\nEntrez l'ID de l'examen que vous souhaitez passer : ");
+        int examId = scanner.nextInt();
+        scanner.nextLine(); // Consommer la ligne restante
+
+        try (Connection connection = DatabaseConnection.getConnection()) {
+            // Vérifier si l'examen existe
+            String checkExamQuery = "SELECT * FROM exams WHERE id = ?";
+            try (PreparedStatement checkStmt = connection.prepareStatement(checkExamQuery)) {
+                checkStmt.setInt(1, examId);
+                try (ResultSet rs = checkStmt.executeQuery()) {
+                    if (rs.next()) {
+                        System.out.println("Vous avez choisi l'examen : " + rs.getString("name"));
+                        // Passer les questions
+                        passerQuestions(connection, examId, user.getId());
+                    } else {
+                        System.out.println("Examen introuvable.");
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("Erreur lors de la récupération de l'examen.");
+        }
+    }
+
     
 }
