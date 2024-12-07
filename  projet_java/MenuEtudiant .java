@@ -48,5 +48,29 @@ public class MenuEtudiant {
         }
     }
 
+
+
+
+    // Méthode pour afficher les examens disponibles
+    private void afficherExamens(User user) {
+        System.out.println("\nExamen(s) disponible(s) :");
+        
+        try (Connection connection = DatabaseConnection.getConnection()) {
+            // Requête SQL pour récupérer les examens disponibles pour l'étudiant
+            String query = "SELECT * FROM exams";
+            try (PreparedStatement statement = connection.prepareStatement(query);
+                 ResultSet rs = statement.executeQuery()) {
+                while (rs.next()) {
+                    int examId = rs.getInt("id");
+                    String examName = rs.getString("name");
+                    System.out.println("ID: " + examId + " - Nom de l'examen: " + examName);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("Erreur lors de l'affichage des examens.");
+        }
+    }
+
     
 }
