@@ -12,7 +12,6 @@ public class MenuAdmin {
     public void showMenu() {
         boolean running = true;
         while (running) {
-            // Menu principal sans affichage coloré
             System.out.println("\n=============================");
             System.out.println("  Menu Admin");
             System.out.println("=============================");
@@ -23,23 +22,22 @@ public class MenuAdmin {
             System.out.println("=================================");
             System.out.print("Choisissez une option : ");
 
-            // Lire l'option choisie par l'admin
             int choice = scanner.nextInt();
-            scanner.nextLine(); // Consommer la ligne restante
+            scanner.nextLine(); 
 
             switch (choice) {
                 case 1:               	
-                    createUser(); // Créer un utilisateur
+                    createUser(); 
                     break;
                 case 2:                	
-                    deleteUserById(); // Supprimer un utilisateur
+                    deleteUserById(); 
                     break;
                 case 3:               	
-                    displayUsers(); // Afficher les utilisateurs
+                    displayUsers(); 
                     break;
                 case 4:              	
                     System.out.println("Au revoir ! À bientôt !");
-                    running = false; // Quitter le menu
+                    running = false; 
                     break;
                 default:
                 	
@@ -61,19 +59,16 @@ public class MenuAdmin {
         System.out.print("Entrez le rôle de l'utilisateur (professeur, etudiant) : ");
         String role = scanner.nextLine();
 
-        // Vérification si le login existe déjà
         if (isUsernameExists(username)) {
             System.out.println(ConsoleColors.RED + "Le login existe déjà. Impossible de créer un nouvel utilisateur avec ce login." + ConsoleColors.RESET);
             return;
         }
 
-        // Vérification si le rôle est admin
         if (role.equalsIgnoreCase("admin")) {
             System.out.println(ConsoleColors.RED + "Vous ne pouvez pas créer un autre utilisateur avec le rôle d'admin." + ConsoleColors.RESET);
             return;
         }
 
-        // Création de l'utilisateur
         try (Connection connection = DatabaseConnection.getConnection()) {
             String query = "INSERT INTO users (username, password, role) VALUES (?, ?, ?)";
             try (PreparedStatement statement = connection.prepareStatement(query)) {
@@ -102,13 +97,13 @@ public class MenuAdmin {
                 statement.setString(1, username);
                 ResultSet resultSet = statement.executeQuery();
                 if (resultSet.next()) {
-                    return resultSet.getInt(1) > 0; // Si le compte existe
+                    return resultSet.getInt(1) > 0; 
                 }
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return false; // Si le compte n'existe pas
+        return false; 
     }
 
 
@@ -116,9 +111,8 @@ public class MenuAdmin {
     private void deleteUserById() {
         System.out.print("Entrez l'ID de l'utilisateur à supprimer : ");
         int userId = scanner.nextInt();
-        scanner.nextLine(); // Consommer la ligne restante
+        scanner.nextLine(); 
 
-        // Suppression de l'utilisateur par ID
         try (Connection connection = DatabaseConnection.getConnection()) {
             String query = "DELETE FROM users WHERE id = ?";
             try (PreparedStatement statement = connection.prepareStatement(query)) {
@@ -128,6 +122,28 @@ public class MenuAdmin {
                     System.out.println(ConsoleColors.GREEN + "Utilisateur supprimé avec succès !" + ConsoleColors.RESET);
                 } else {
                     System.out.println(ConsoleColors.RED + "Aucun utilisateur trouvé avec cet ID." + ConsoleColors.RESET);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println(ConsoleColors.RED + "Erreur de connexion à la base de données." + ConsoleColors.RESET);
+        }
+    }
+
+
+    // Méthode pour afficher les utilisateurs
+    private void displayUsers() {
+        System.out.println(ConsoleColors.GREEN + "Liste des utilisateurs :" + ConsoleColors.RESET);
+
+        try (Connection connection = DatabaseConnection.getConnection()) {
+            String query = "SELECT * FROM users";
+            try (PreparedStatement statement = connection.prepareStatement(query)) {
+                ResultSet resultSet = statement.executeQuery();
+                while (resultSet.next()) {
+                    int id = resultSet.getInt("id");
+                    String username = resultSet.getString("username");
+                    String role = resultSet.getString("role");
+                    System.out.println("ID: " + id + ", Login: " + username + ", Rôle: " + role);
                 }
             }
         } catch (SQLException e) {
