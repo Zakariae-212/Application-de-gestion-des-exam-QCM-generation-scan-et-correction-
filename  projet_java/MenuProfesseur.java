@@ -57,14 +57,12 @@ public class MenuProfesseur {
         String nomExamen = scanner.nextLine();
 
         try (Connection connection = DatabaseConnection.getConnection()) {
-            // Ajouter l'examen à la table exams
             String queryExamen = "INSERT INTO exams (name) VALUES (?)";
             try (PreparedStatement statement = connection.prepareStatement(queryExamen, Statement.RETURN_GENERATED_KEYS)) {
                 statement.setString(1, nomExamen);
                 int rowsAffected = statement.executeUpdate();
 
                 if (rowsAffected > 0) {
-                    // Récupérer l'ID de l'examen créé
                     ResultSet rs = statement.getGeneratedKeys();
                     int examId = 0;
                     if (rs.next()) {
@@ -73,13 +71,11 @@ public class MenuProfesseur {
 
                     System.out.print("Entrez le nombre de questions : ");
                     int nbQuestions = scanner.nextInt();
-                    scanner.nextLine(); // Consommer la ligne restante
+                    scanner.nextLine(); 
                     
-                    // Créer le fichier pour l'examen
                     String examFilePath = "C:\\Users\\ramiz\\OneDrive\\Documents\\dossier_professeur\\examen_" + examId + ".txt";
                     BufferedWriter writer = new BufferedWriter(new FileWriter(examFilePath));
 
-                    // Parcourir les questions et ajouter les options
                     for (int i = 1; i <= nbQuestions; i++) {
                         System.out.println("\nAjouter la question " + i);
                         System.out.print("Entrez le texte de la question " + i + " : ");
@@ -89,7 +85,7 @@ public class MenuProfesseur {
                         try (PreparedStatement stmtQuestion = connection.prepareStatement(queryQuestion, Statement.RETURN_GENERATED_KEYS)) {
                             stmtQuestion.setInt(1, examId);
                             stmtQuestion.setString(2, questionText);
-                            stmtQuestion.setInt(3, 0); // Initialisation de correct_answer à 0 (ou toute autre valeur par défaut)
+                            stmtQuestion.setInt(3, 0); 
                             stmtQuestion.executeUpdate();
 
                             ResultSet rsQuestion = stmtQuestion.getGeneratedKeys();
@@ -98,28 +94,24 @@ public class MenuProfesseur {
                                 questionId = rsQuestion.getInt(1);
                             }
 
-                            // Ajouter les options pour la question
                             String[] options = new String[3];
                             for (int j = 0; j < 3; j++) {
                                 System.out.print("Entrez l'option " + (j + 1) + " : ");
                                 options[j] = scanner.nextLine();
 
-                                // Insérer l'option dans la base de données
                                 String queryOption = "INSERT INTO options (question_id, option_text, is_correct) VALUES (?, ?, ?)";
                                 try (PreparedStatement stmtOption = connection.prepareStatement(queryOption, Statement.RETURN_GENERATED_KEYS)) {
                                     stmtOption.setInt(1, questionId);
                                     stmtOption.setString(2, options[j]);
-                                    stmtOption.setBoolean(3, false); // Pas encore de bonne réponse
+                                    stmtOption.setBoolean(3, false); 
                                     stmtOption.executeUpdate();
                                 }
                             }
 
-                            // Demander quelle option est correcte
                             System.out.print("Quelle option est correcte ? (1, 2 ou 3) : ");
                             int correctOption = scanner.nextInt();
-                            scanner.nextLine(); // Consommer la ligne restante
+                            scanner.nextLine(); 
 
-                            // Mettre à jour l'option correcte dans la table 'options' et la question
                             String queryUpdateCorrectOption = "UPDATE options SET is_correct = ? WHERE question_id = ? AND option_text = ?";
                             try (PreparedStatement stmtUpdateOption = connection.prepareStatement(queryUpdateCorrectOption)) {
                                 stmtUpdateOption.setBoolean(1, true);
@@ -128,7 +120,6 @@ public class MenuProfesseur {
                                 stmtUpdateOption.executeUpdate();
                             }
 
-                            // Mettre à jour la question avec la bonne réponse
                             String queryUpdateQuestion = "UPDATE questions SET correct_answer = ? WHERE id = ?";
                             try (PreparedStatement stmtUpdateQuestion = connection.prepareStatement(queryUpdateQuestion)) {
                                 stmtUpdateQuestion.setInt(1, correctOption); // Enregistrer l'ID de l'option correcte
@@ -136,12 +127,11 @@ public class MenuProfesseur {
                                 stmtUpdateQuestion.executeUpdate();
                             }
 
-                            // Enregistrer la réponse correcte dans le fichier
                             writer.write(correctOption + "\n");
                         }
                     }
 
-                    writer.close(); // Fermer le fichier
+                    writer.close(); 
                     System.out.println("Examen ajouté avec succès !");
                     System.out.println("Le fichier de l'examen a été enregistré dans " + examFilePath);
                 }
@@ -171,6 +161,43 @@ public class MenuProfesseur {
         } catch (SQLException e) {
             e.printStackTrace();
             System.out.println("Erreur lors de l'affichage des examens.");
+        }
+    }
+
+
+    // Méthode pour supprimer un examen par ID
+    private void supprimerExamen() {
+        System.out.print("Entrez l'ID de l'examen à supprimer : ");
+        int examId = scanner.nextInt();
+        scanner.nextLine(); 
+
+        try (Connection connection = DatabaseConnection.getConnection()) {
+            String queryDeleteOptions = "DELETE FROM options WHERE question_id IN (SELECT id FROM questions WHERE exam_id = ?)";
+            try (PreparedStatement stmtDeleteOptions = connection.prepareStatement(queryDeleteOptions)) {
+                stmtDeleteOptions.setInt(1, examId);
+                stmtDeleteOptions.executeUpdate();
+            }
+
+            String queryDeleteQuestions = "DELETE FROM questions WHERE exam_id = ?";
+            try (PreparedStatement stmtDeleteQuestions = connection.prepareStatement(queryDeleteQuestions)) {
+                stmtDeleteQuestions.setInt(1, examId);
+                stmtDeleteQuestions.executeUpdate();
+            }
+
+            String queryDeleteExamen = "DELETE FROM exams WHERE id = ?";
+            try (PreparedStatement stmtDeleteExamen = connection.prepareStatement(queryDeleteExamen)) {
+                stmtDeleteExamen.setInt(1, examId);
+                int rowsAffected = stmtDeleteExamen.executeUpdate();
+
+                if (rowsAffected > 0) {
+                    System.out.println("Examen et toutes ses questions et options supprimés avec succès !");
+                } else {
+                    System.out.println("Aucun examen trouvé avec cet ID.");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("Erreur lors de la suppression de l'examen.");
         }
     }
     
