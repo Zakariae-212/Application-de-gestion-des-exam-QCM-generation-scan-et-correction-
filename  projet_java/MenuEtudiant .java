@@ -277,5 +277,56 @@ public class MenuEtudiant {
     }
 
 
+    // Méthode pour enregistrer la réponse dans un fichier
+    private void enregistrerRéponseDansFichier(int studentId, int examId, int questionId, int selectedOptionId) {
+        // Spécifier le nom du fichier en fonction de l'ID de l'étudiant et de l'ID de l'examen
+        String cheminFichier = "C:\\Users\\ramiz\\OneDrive\\Documents\\dossier_etudiant\\etudiant_" + studentId + "exams" + examId + ".txt";
+        
+        try {
+            // Vérifier si le répertoire existe, sinon le créer
+            File dossier = new File("C:\\Users\\ramiz\\OneDrive\\Documents\\dossier_etudiant");
+            if (!dossier.exists()) {
+                dossier.mkdirs(); // Crée le répertoire si nécessaire
+            }
+
+            // Créer le fichier s'il n'existe pas déjà
+            File file = new File(cheminFichier);
+            if (!file.exists()) {
+                file.createNewFile(); // Crée un nouveau fichier si nécessaire
+            }
+
+            // Lire les réponses existantes du fichier pour conserver seulement les deux dernières
+            StringBuilder responses = new StringBuilder();
+            try (Scanner scanner = new Scanner(file)) {
+                while (scanner.hasNextLine()) {
+                    responses.append(scanner.nextLine()).append("\n");
+                }
+            }
+
+            // Ajouter la nouvelle option sélectionnée à la fin de la liste
+            responses.append(selectedOptionId).append("\n");
+
+            // Garde seulement les deux dernières réponses
+            String[] allResponses = responses.toString().split("\n");
+            if (allResponses.length > 2) {
+                // Si plus de deux réponses, conserver uniquement les deux dernières
+                responses = new StringBuilder();
+                responses.append(allResponses[allResponses.length - 2]).append("\n")
+                        .append(allResponses[allResponses.length - 1]).append("\n");
+            }
+
+            // Réécrire le fichier avec seulement les deux dernières réponses
+            try (FileWriter writer = new FileWriter(file, false)) { // false pour réécrire le fichier (écraser)
+                writer.write(responses.toString()); // Écrire seulement les deux dernières réponses
+                System.out.println("Réponse enregistrée dans le fichier.");
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println("Erreur lors de l'enregistrement de la réponse dans le fichier.");
+        }
+    }
+
+
     
 }
