@@ -191,5 +191,30 @@ public class MenuEtudiant {
         }
     }
 
+
+    // Méthode pour passer les questions d'un examen
+    private void passerQuestions(Connection connection, int examId, int userId) throws SQLException {
+        // Supprimer les anciennes réponses de l'étudiant pour cet examen
+        supprimerAnciennesRéponses(connection, userId, examId);
+
+        String queryQuestions = "SELECT * FROM questions WHERE exam_id = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(queryQuestions)) {
+            stmt.setInt(1, examId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                int questionNumber = 1;
+                while (rs.next()) {
+                    int questionId = rs.getInt("id");
+                    String questionText = rs.getString("question_text");
+                    System.out.println("\nQuestion " + questionNumber + ": " + questionText);
+                    int selectedOptionId = afficherOptions(connection, questionId);
+                    enregistrerRéponse(userId, examId, questionId, selectedOptionId); // Enregistrer la réponse dans la BDD
+                    enregistrerRéponseDansFichier(userId, examId, questionId, selectedOptionId); // Enregistrer la réponse dans un fichier
+                    questionNumber++;
+                }
+                System.out.println("Merci d'avoir passé l'examen !");
+            }
+        }
+    }
+
     
 }
