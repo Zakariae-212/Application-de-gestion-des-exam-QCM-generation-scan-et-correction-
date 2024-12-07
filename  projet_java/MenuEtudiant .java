@@ -236,4 +236,27 @@ public class MenuEtudiant {
 
 
     
+
+ // Méthode pour afficher les options d'une question
+    private int afficherOptions(Connection connection, int questionId) throws SQLException {
+        System.out.println("Options :");
+        String queryOptions = "SELECT * FROM options WHERE question_id = ?";
+        try (PreparedStatement stmtOptions = connection.prepareStatement(queryOptions)) {
+            stmtOptions.setInt(1, questionId);
+            try (ResultSet rsOptions = stmtOptions.executeQuery()) {
+                int optionNumber = 1;
+                while (rsOptions.next()) {
+                    System.out.println(optionNumber + ". " + rsOptions.getString("option_text"));
+                    optionNumber++;
+                }
+            }
+        }
+
+        // Demander à l'étudiant de choisir une option
+        System.out.print("\nEntrez le numéro de l'option choisie : ");
+        return scanner.nextInt();
+    }
+
+
+    
 }
