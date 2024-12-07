@@ -134,5 +134,18 @@ public class MenuEtudiant {
         }
     }
 
+
+    // Méthode pour lire un fichier et retourner son contenu sous forme de liste de chaînes
+    private List<String> lireFichier(File file) throws IOException {
+        List<String> lines = new ArrayList<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                lines.add(line);
+            }
+        }
+        return lines;
+    }
+
     
 }
