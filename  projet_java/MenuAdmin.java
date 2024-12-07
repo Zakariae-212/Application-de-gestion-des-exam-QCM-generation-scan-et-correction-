@@ -94,6 +94,24 @@ public class MenuAdmin {
     }
 
 
+    // Méthode pour vérifier si un login existe déjà dans la base de données
+    private boolean isUsernameExists(String username) {
+        try (Connection connection = DatabaseConnection.getConnection()) {
+            String query = "SELECT COUNT(*) FROM users WHERE username = ?";
+            try (PreparedStatement statement = connection.prepareStatement(query)) {
+                statement.setString(1, username);
+                ResultSet resultSet = statement.executeQuery();
+                if (resultSet.next()) {
+                    return resultSet.getInt(1) > 0; // Si le compte existe
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false; // Si le compte n'existe pas
+    }
+
+
     
     
 }
