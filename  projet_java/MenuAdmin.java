@@ -112,6 +112,31 @@ public class MenuAdmin {
     }
 
 
+     // Méthode pour supprimer un utilisateur par ID
+    private void deleteUserById() {
+        System.out.print("Entrez l'ID de l'utilisateur à supprimer : ");
+        int userId = scanner.nextInt();
+        scanner.nextLine(); // Consommer la ligne restante
+
+        // Suppression de l'utilisateur par ID
+        try (Connection connection = DatabaseConnection.getConnection()) {
+            String query = "DELETE FROM users WHERE id = ?";
+            try (PreparedStatement statement = connection.prepareStatement(query)) {
+                statement.setInt(1, userId);
+                int rowsAffected = statement.executeUpdate();
+                if (rowsAffected > 0) {
+                    System.out.println(ConsoleColors.GREEN + "Utilisateur supprimé avec succès !" + ConsoleColors.RESET);
+                } else {
+                    System.out.println(ConsoleColors.RED + "Aucun utilisateur trouvé avec cet ID." + ConsoleColors.RESET);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println(ConsoleColors.RED + "Erreur de connexion à la base de données." + ConsoleColors.RESET);
+        }
+    }
+
+
     
     
 }
